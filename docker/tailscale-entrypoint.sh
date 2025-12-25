@@ -42,22 +42,27 @@ echo "Connecting to Tailscale network..."
 echo "  Hostname: ${TS_HOSTNAME}"
 echo "  State Dir: ${TS_STATE_DIR}"
 
-# Validate TS_EXTRA_ARGS if provided
+# Validate TS_EXTRA_ARGS if provided using whitelist approach
 if [ -n "${TS_EXTRA_ARGS}" ]; then
-    # Check for suspicious characters that could indicate injection attempts
-    case "${TS_EXTRA_ARGS}" in
-        *\;*|*\&*|*\|*|*\`*|*\$\(*|*\>*|*\<*)
-            echo "ERROR: TS_EXTRA_ARGS contains suspicious characters"
-            echo "Only Tailscale flags like '--accept-dns=true' are allowed"
-            exit 1
-            ;;
-    esac
+    # Check for any characters that aren't typical Tailscale flag characters
+    # Allowed: letters, numbers, hyphens, equals, commas, dots, colons, slashes, spaces
+    # This whitelist approach is more secure than blacklisting specific characters
+    if ! echo "${TS_EXTRA_ARGS}" | grep -qE '^[a-zA-Z0-9 =,.:/-]+$'; then
+        echo "ERROR: TS_EXTRA_ARGS contains invalid characters"
+        echo "Only alphanumeric characters and these symbols are allowed: - = , . : / (space)"
+        echo "Examples of valid usage:"
+        echo "  --accept-dns=true"
+        echo "  --advertise-tags=tag:service,tag:production"
+        echo "  --advertise-routes=10.0.0.0/24"
+        exit 1
+    fi
+    echo "  Extra Args: ${TS_EXTRA_ARGS}"
 fi
 
 # Authenticate with Tailscale using ephemeral key
 # Note: TS_EXTRA_ARGS is intentionally not quoted to allow word splitting
-# for multiple arguments (e.g., "--accept-dns=true --ssh")
-# The variable is validated above to prevent injection attacks
+# for multiple arguments. The variable is validated above using a whitelist
+# of safe characters to prevent injection attacks.
 tailscale up \
     --authkey="${TS_AUTH_KEY}" \
     --hostname="${TS_HOSTNAME}" \
@@ -68,10 +73,12 @@ echo "✓ Tailscale connected successfully!"
 echo "  Status:"
 tailscale status
 
-# Monitor tailscaled process and restart if it crashes
+# Monitor tailscaled process
+# Exit if daemon crashes - Docker will restart the container if restart policy is set
 while true; do
     if ! kill -0 $TAILSCALED_PID 2>/dev/null; then
         echo "ERROR: Tailscaled process (PID $TAILSCALED_PID) has crashed"
+        echo "Container will exit and restart if restart policy is configured"
         exit 1
     fi
     sleep 10
