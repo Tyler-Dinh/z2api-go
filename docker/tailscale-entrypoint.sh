@@ -47,19 +47,20 @@ if [ -n "${TS_EXTRA_ARGS}" ]; then
     # Validate that TS_EXTRA_ARGS contains only properly formatted Tailscale flags
     # Pattern explanation:
     # - Starts with optional whitespace
-    # - One or more flags starting with -- followed by alphanumeric/hyphen
-    # - Optional =value with safe characters (alphanumeric, comma, dot, colon, slash)
+    # - One or more flags starting with -- followed by alphanumeric/hyphen/underscore
+    # - Optional =value with safe characters (alphanumeric, hyphen, underscore, comma, dot, colon, slash)
     # - Flags separated by spaces
     # This strict pattern prevents injection while allowing legitimate Tailscale flags
-    if ! echo "${TS_EXTRA_ARGS}" | grep -qE '^[[:space:]]*(--[a-zA-Z0-9-]+(=[a-zA-Z0-9.,:/]+)?[[:space:]]*)+$'; then
+    if ! echo "${TS_EXTRA_ARGS}" | grep -qE '^[[:space:]]*(--[a-zA-Z0-9_-]+(=[a-zA-Z0-9._,:/\\-]+)?[[:space:]]*)+$'; then
         echo "ERROR: TS_EXTRA_ARGS contains invalid format"
         echo "Only properly formatted Tailscale flags are allowed."
         echo "Format: --flag or --flag=value"
-        echo "Allowed characters in values: alphanumeric, comma, dot, colon, slash"
+        echo "Allowed characters in flag names: alphanumeric, hyphen, underscore"
+        echo "Allowed characters in values: alphanumeric, hyphen, underscore, comma, dot, colon, slash"
         echo ""
         echo "Examples of valid usage:"
         echo "  --accept-dns=true"
-        echo "  --advertise-tags=tag:service,tag:production"
+        echo "  --advertise-tags=tag:my-service,tag:production"
         echo "  --advertise-routes=10.0.0.0/24"
         echo "  --accept-dns=true --ssh"
         exit 1
