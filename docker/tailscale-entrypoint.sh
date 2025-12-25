@@ -42,10 +42,22 @@ echo "Connecting to Tailscale network..."
 echo "  Hostname: ${TS_HOSTNAME}"
 echo "  State Dir: ${TS_STATE_DIR}"
 
+# Validate TS_EXTRA_ARGS if provided
+if [ -n "${TS_EXTRA_ARGS}" ]; then
+    # Check for suspicious characters that could indicate injection attempts
+    case "${TS_EXTRA_ARGS}" in
+        *\;*|*\&*|*\|*|*\`*|*\$\(*|*\>*|*\<*)
+            echo "ERROR: TS_EXTRA_ARGS contains suspicious characters"
+            echo "Only Tailscale flags like '--accept-dns=true' are allowed"
+            exit 1
+            ;;
+    esac
+fi
+
 # Authenticate with Tailscale using ephemeral key
 # Note: TS_EXTRA_ARGS is intentionally not quoted to allow word splitting
 # for multiple arguments (e.g., "--accept-dns=true --ssh")
-# This is safe because the user controls the environment variable
+# The variable is validated above to prevent injection attacks
 tailscale up \
     --authkey="${TS_AUTH_KEY}" \
     --hostname="${TS_HOSTNAME}" \

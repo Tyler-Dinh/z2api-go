@@ -15,8 +15,8 @@ services:
   #   image: alpine/socat
   #   container_name: z2api-go-local-proxy
   #   ports:
-  #     - "8080:8080"
-  #   command: tcp-listen:8080,fork,reuseaddr tcp-connect:z2api-go:8080
+  #     - "${PORT:-8080}:${PORT:-8080}"
+  #   command: tcp-listen:${PORT:-8080},fork,reuseaddr tcp-connect:z2api-go:${PORT:-8080}
   #   depends_on:
   #     - z2api-go
   #   restart: unless-stopped
@@ -28,4 +28,4 @@ services:
   # z2api-go:
   #   network_mode: bridge
   #   ports:
-  #     - "8080:8080"
+  #     - "${PORT:-8080}:${PORT:-8080}"
