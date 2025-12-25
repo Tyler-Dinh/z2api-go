@@ -1,0 +1,17 @@
+# Local development docker-compose without Tailscale
+# Use this for local testing: docker-compose -f docker-compose.local.yml up
+services:
+  z2api-go:
+    build: .
+    image: z2api-go
+    container_name: z2api-go
+    ports:
+      - "8080:8080"
+    environment:
+      - TOKEN=
+      - PORT=8080
+      - DEBUG=false
+      - DEBUG_MSG=false
+      - THINK_TAGS_MODE=reasoning
+      - MODEL=glm-4.7
+    restart: unless-stopped
