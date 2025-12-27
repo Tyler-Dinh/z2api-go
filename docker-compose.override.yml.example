@@ -1,0 +1,30 @@
+# Optional docker-compose override file
+# Use this if you want to expose ports on localhost in addition to Tailscale
+# 
+# Usage:
+#   1. Copy this file: cp docker-compose.override.yml.example docker-compose.override.yml
+#   2. Uncomment the configuration you need
+#   3. Run: docker-compose up -d
+#
+# Note: docker-compose automatically loads docker-compose.override.yml if it exists
+
+services:
+  # Option 1: Expose ports on host by removing network_mode
+  # This makes the service accessible both via Tailscale AND localhost
+  # Uncomment the 'ports' section below:
+  # tailscale:
+  #   ports:
+  #     - "${PORT:-8080}:${PORT:-8080}"
+  
+  # Option 2: Run without Tailscale (local development only)
+  # This completely disables Tailscale integration
+  # Uncomment both sections below:
+  # z2api-go:
+  #   network_mode: bridge
+  #   ports:
+  #     - "${PORT:-8080}:${PORT:-8080}"
+  #   depends_on: []
+  # 
+  # tailscale:
+  #   profiles:
+  #     - disabled
