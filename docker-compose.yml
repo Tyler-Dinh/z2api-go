@@ -1,15 +1,51 @@
 services:
+  # Tailscale sidecar service
+  tailscale:
+    build:
+      context: .
+      dockerfile: Dockerfile.tailscale
+    image: z2api-go-tailscale
+    container_name: z2api-go-tailscale
+    hostname: ${TS_HOSTNAME:-z2api-go}
+    environment:
+      # Required: Tailscale ephemeral auth key
+      # Generate at: https://login.tailscale.com/admin/settings/keys
+      - TS_AUTH_KEY=${TS_AUTH_KEY}
+      # Optional: Customize hostname on Tailscale network
+      - TS_HOSTNAME=${TS_HOSTNAME:-z2api-go}
+      # Optional: Additional Tailscale arguments (e.g., --advertise-tags=tag:service)
+      - TS_EXTRA_ARGS=${TS_EXTRA_ARGS:-}
+      # Optional: State directory for Tailscale
+      - TS_STATE_DIR=/var/lib/tailscale
+    volumes:
+      # Persist Tailscale state (optional, but recommended for non-ephemeral setups)
+      - tailscale-state:/var/lib/tailscale
+      # Tailscale socket directory
+      - tailscale-sock:/var/run/tailscale
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    restart: unless-stopped
+
+  # Main application service
   z2api-go:
     build: .
     image: z2api-go
     container_name: z2api-go
-    ports:
-      - "8080:8080"
+    # Share Tailscale's network namespace for seamless integration
+    network_mode: "service:tailscale"
     environment:
-      - TOKEN=
+      - TOKEN=125a583265464446be50412ef8701d72.tBGGNJmAQMvOhvXO
+      - PROXY_API_KEYS=sk-internal-dev:Internal Dev Team,sk-prod-service:Production Service
       - PORT=8080
       - DEBUG=false
       - DEBUG_MSG=false
       - THINK_TAGS_MODE=reasoning
       - MODEL=glm-4.7
+    depends_on:
+      - tailscale
     restart: unless-stopped
+
+volumes:
+  tailscale-state:
+  tailscale-sock:

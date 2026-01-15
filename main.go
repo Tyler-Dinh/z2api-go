@@ -29,9 +29,11 @@ func main() {
 	mux.HandleFunc("/v1/models", handlers.ModelsHandler)
 	mux.HandleFunc("/v1/chat/completions", handlers.ChatCompletions)
 	mux.HandleFunc("/v1/messages", handlers.AnthropicMessages)
+	mux.HandleFunc("/admin/usage", handlers.UsageHandler)
 
-	// Apply CORS middleware
-	handler := middleware.CORS(mux)
+	// Apply auth middleware then CORS
+	auth := middleware.GetAuthMiddleware()
+	handler := middleware.CORS(auth.AuthHandler(mux))
 
 	// Print startup info
 	log.Println("---------------------------------------------------------------------")
@@ -44,12 +46,20 @@ func main() {
 	log.Printf("Anonymous Mode: %v", cfg.API.Anonymous)
 	log.Printf("Debug Mode:     %v", cfg.API.Debug)
 	log.Printf("Debug Messages: %v", cfg.API.DebugMsg)
+	if auth.GetRequireAuth() {
+		log.Printf("Proxy Auth:     ENABLED (%d keys configured)", len(cfg.API.ProxyKeys))
+	} else {
+		log.Printf("Proxy Auth:     DISABLED (open access)")
+	}
 	log.Println("---------------------------------------------------------------------")
 	log.Println("Available Endpoints:")
-	log.Println("  GET  /health                  - Health check")
+	log.Println("  GET  /health                  - Health check (no auth)")
 	log.Println("  GET  /v1/models               - List models")
 	log.Println("  POST /v1/chat/completions     - OpenAI chat completions")
 	log.Println("  POST /v1/messages             - Anthropic messages")
+	if auth.GetRequireAuth() {
+		log.Println("  GET  /admin/usage             - Usage stats (requires proxy key)")
+	}
 	log.Println("---------------------------------------------------------------------")
 
 	// Start server

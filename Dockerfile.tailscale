@@ -1,0 +1,9 @@
+# Tailscale sidecar container
+FROM tailscale/tailscale:stable
+
+# Copy tailscale startup script
+COPY docker/tailscale-entrypoint.sh /usr/local/bin/tailscale-entrypoint.sh
+RUN chmod +x /usr/local/bin/tailscale-entrypoint.sh
+
+# Set the entrypoint
+ENTRYPOINT ["/usr/local/bin/tailscale-entrypoint.sh"]

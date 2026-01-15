@@ -23,6 +23,7 @@ type APIConfig struct {
 	DebugMsg  bool
 	Think     string
 	Anonymous bool
+	ProxyKeys map[string]string // proxy API key -> name/description
 }
 
 // ModelConfig holds model configuration
@@ -64,6 +65,7 @@ func loadConfig() *Config {
 			Debug:    getEnvBool("DEBUG", false),
 			DebugMsg: getEnvBool("DEBUG_MSG", false),
 			Think:    getEnv("THINK_TAGS_MODE", "reasoning"),
+			ProxyKeys: parseProxyKeys(getEnv("PROXY_API_KEYS", "")),
 		},
 		Model: ModelConfig{
 			Default: getEnv("MODEL", "glm-4.7"),
@@ -149,4 +151,36 @@ func getEnvBool(key string, defaultValue bool) bool {
 		return strings.ToLower(value) == "true"
 	}
 	return defaultValue
+}
+
+// parseProxyKeys parses proxy API keys from format "key1:name1,key2:name2"
+func parseProxyKeys(value string) map[string]string {
+	result := make(map[string]string)
+	if value == "" {
+		return result
+	}
+
+	pairs := strings.Split(value, ",")
+	for _, pair := range pairs {
+		pair = strings.TrimSpace(pair)
+		if pair == "" {
+			continue
+		}
+		parts := strings.SplitN(pair, ":", 2)
+		if len(parts) == 2 {
+			key := strings.TrimSpace(parts[0])
+			name := strings.TrimSpace(parts[1])
+			if key != "" && name != "" {
+				result[key] = name
+			}
+		} else if len(parts) == 1 {
+			// If only key provided, use "unnamed" as name
+			key := strings.TrimSpace(parts[0])
+			if key != "" {
+				result[key] = "unnamed"
+			}
+		}
+	}
+
+	return result
 }
