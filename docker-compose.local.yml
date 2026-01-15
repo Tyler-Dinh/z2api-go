@@ -8,7 +8,8 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - TOKEN=
+      - TOKEN=125a583265464446be50412ef8701d72.tBGGNJmAQMvOhvXO
+      - PROXY_API_KEYS=sk-internal-dev:Internal Dev Team,sk-prod-service:Production Service
       - PORT=8080
       - DEBUG=false
       - DEBUG_MSG=false
