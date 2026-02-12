@@ -66,7 +66,7 @@ func loadConfig() *Config {
 			Think:    getEnv("THINK_TAGS_MODE", "reasoning"),
 		},
 		Model: ModelConfig{
-			Default: getEnv("MODEL", "glm-4.7"),
+			Default: getEnv("MODEL", "glm-5"),
 			Mapping: make(map[string]string),
 		},
 		Headers: make(map[string]string),

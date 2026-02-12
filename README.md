@@ -38,7 +38,7 @@ cp .env.example .env
 | `DEBUG` | Enable debug mode | `false` |
 | `DEBUG_MSG` | Enable debug messages | `false` |
 | `THINK_TAGS_MODE` | Thinking tags processing mode (`reasoning`, `think`, `strip`, `details`) | `reasoning` |
-| `MODEL` | Default model | `glm-4.7` |
+| `MODEL` | Default model | `glm-5` |
 
 ## License
 
