@@ -395,7 +395,7 @@ func SendChatRequest(data map[string]interface{}, chatID string) (*http.Response
 	}
 
 	// Build URL
-	apiURL := fmt.Sprintf("%s//%s/api/chat/completions?%s",
+	apiURL := fmt.Sprintf("%s//%s/api/v2/chat/completions?%s",
 		cfg.Source.Protocol, cfg.Source.Host, params.Encode())
 
 	// Marshal request body
